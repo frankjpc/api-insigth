@@ -181,7 +181,7 @@ export default function PlayerDashboard() {
 
         {/* ── Hall of Fame — todas las cartas ── */}
         {allPow.length > 0 && (
-          <div className="glass-card">
+          <div className="glass-card" style={{ marginBottom: 24 }}>
             <div className="section-title">
               <Medal size={14} /> Hall of Fame — Jugadores de la Semana
             </div>

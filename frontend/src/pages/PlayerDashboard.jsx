@@ -322,6 +322,7 @@ export default function PlayerDashboard() {
                 })}
               </tbody>
             </table>
+            </div>
           )}
         </div>
 
@@ -403,6 +404,7 @@ export default function PlayerDashboard() {
                 })}
               </tbody>
             </table>
+            </div>
           )}
 
           {stats.semanas.length === 0 && (
@@ -420,9 +422,28 @@ export default function PlayerDashboard() {
               <Medal size={14} /> Hall of Fame — Jugadores de la Semana
             </div>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', paddingTop: 8 }}>
-              {[...allPow].sort((a, b) => a.semana - b.semana).map((p) => (
-                <FCCard key={p.id} player={p} />
-              ))}
+              {[...allPow].sort((a, b) => a.semana - b.semana).map((p) => {
+                const color = p.tipo === 'goleador' ? 'var(--data-goal)' : p.tipo === 'asistidor' ? 'var(--data-assist)' : 'var(--data-save)';
+                return p.imagen_carta ? (
+                  <div key={p.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: '0.63rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color }}>
+                      Sem {p.semana} · {p.tipo}
+                    </span>
+                    <img
+                      src={p.imagen_carta}
+                      alt="Carta FC"
+                      style={{
+                        width: 150,
+                        borderRadius: 'var(--r-md)',
+                        border: `1px solid ${color}33`,
+                        boxShadow: `0 0 18px ${color}25`,
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <FCCard key={p.id} player={p} />
+                );
+              })}
             </div>
           </div>
         )}

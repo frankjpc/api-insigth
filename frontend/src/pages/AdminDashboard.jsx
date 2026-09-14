@@ -117,16 +117,31 @@ export default function AdminDashboard() {
     }
     setSubmitting(true);
     try {
-      // Convertir la imagen a base64 para guardarla directamente en la BD
-      // Esto elimina la dependencia de Supabase Storage y cualquier problema de permisos/URLs
-      const toBase64 = (file) => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result); // resultado: data:image/...;base64,...
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      // Comprimir y convertir la imagen a base64 usando canvas
+      // Esto reduce el tamaño de la imagen manteniendo buena calidad visual
+      const compressImage = (file, maxPx = 900, quality = 0.82) =>
+        new Promise((resolve, reject) => {
+          const img = new Image();
+          const url = URL.createObjectURL(file);
+          img.onload = () => {
+            URL.revokeObjectURL(url);
+            // Calcular nuevas dimensiones manteniendo la proporción
+            let { width, height } = img;
+            if (width > maxPx || height > maxPx) {
+              if (width > height) { height = Math.round((height / width) * maxPx); width = maxPx; }
+              else { width = Math.round((width / height) * maxPx); height = maxPx; }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.onerror = reject;
+          img.src = url;
+        });
 
-      const base64Image = await toBase64(powForm.fileCarta);
+      const base64Image = await compressImage(powForm.fileCarta);
 
       await client.post('/player-of-week', {
         semana:       powForm.semana,
@@ -141,6 +156,7 @@ export default function AdminDashboard() {
     }
     setSubmitting(false);
   };
+
 
   const filteredStats = weekFilter === 'all'
     ? allStats.stats

@@ -144,7 +144,7 @@ router.post('/', authenticateToken, async (req, res) => {
         if (existing.estado === 'aprobado') {
           return res.status(400).json({ error: 'Las estadísticas de esta semana ya fueron aprobadas' });
         }
-        await supabase
+        const { error: updErr } = await supabase
           .from('estadisticas_semanales')
           .update({
             goles: goles || 0,
@@ -156,8 +156,9 @@ router.post('/', authenticateToken, async (req, res) => {
           })
           .eq('usuario_id', userId)
           .eq('semana', semana);
+        if (updErr) throw updErr;
       } else {
-        await supabase.from('estadisticas_semanales').insert([{
+        const { error: insErr } = await supabase.from('estadisticas_semanales').insert([{
           usuario_id: userId,
           semana,
           goles: goles || 0,
@@ -165,6 +166,7 @@ router.post('/', authenticateToken, async (req, res) => {
           atajadas: atajadas || 0,
           estado: 'pendiente',
         }]);
+        if (insErr) throw insErr;
       }
 
       // Notificar a todos los admins
@@ -177,7 +179,8 @@ router.post('/', authenticateToken, async (req, res) => {
           tipo: 'estadistica_pendiente',
           mensaje: `${usuario.nombre} ${usuario.apellido} envió estadísticas de la Semana ${semana}`,
         }));
-        await supabase.from('notificaciones').insert(notifs);
+        const { error: notifErr } = await supabase.from('notificaciones').insert(notifs);
+        if (notifErr) throw notifErr;
       }
 
       return res.json({ message: 'Estadísticas enviadas. Pendiente de aprobación.' });
@@ -370,13 +373,15 @@ router.put('/:id/approve', authenticateToken, requireAdmin, async (req, res) => 
       if (asistencias !== undefined) updates.asistencias = asistencias;
       if (atajadas !== undefined) updates.atajadas = atajadas;
 
-      await supabase.from('estadisticas_semanales').update(updates).eq('id', id);
+      const { error: updErr } = await supabase.from('estadisticas_semanales').update(updates).eq('id', id);
+      if (updErr) throw updErr;
 
-      await supabase.from('notificaciones').insert([{
+      const { error: notifErr } = await supabase.from('notificaciones').insert([{
         usuario_id: stat.usuario_id,
         tipo: 'estadistica_aprobada',
         mensaje: `✅ Tus estadísticas de la Semana ${stat.semana} fueron aprobadas`,
       }]);
+      if (notifErr) throw notifErr;
 
       return res.json({ message: 'Estadísticas aprobadas' });
     }
@@ -425,17 +430,19 @@ router.put('/:id/reject', authenticateToken, requireAdmin, async (req, res) => {
       const { data: stat } = await supabase.from('estadisticas_semanales').select('*').eq('id', id).single();
       if (!stat) return res.status(404).json({ error: 'Estadística no encontrada' });
 
-      await supabase.from('estadisticas_semanales').update({
+      const { error: updErr } = await supabase.from('estadisticas_semanales').update({
         estado: 'rechazado',
         nota_admin: nota || null,
         updated_at: new Date().toISOString(),
       }).eq('id', id);
+      if (updErr) throw updErr;
 
-      await supabase.from('notificaciones').insert([{
+      const { error: notifErr } = await supabase.from('notificaciones').insert([{
         usuario_id: stat.usuario_id,
         tipo: 'estadistica_rechazada',
         mensaje: `❌ Tus estadísticas de la Semana ${stat.semana} fueron rechazadas${nota ? ': ' + nota : '. Puedes volver a enviarlas.'}`,
       }]);
+      if (notifErr) throw notifErr;
 
       return res.json({ message: 'Estadísticas rechazadas' });
     }
@@ -478,7 +485,8 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
       if (atajadas !== undefined) updates.atajadas = atajadas;
       if (estado !== undefined) updates.estado = estado;
 
-      await supabase.from('estadisticas_semanales').update(updates).eq('id', id);
+      const { error: updErr } = await supabase.from('estadisticas_semanales').update(updates).eq('id', id);
+      if (updErr) throw updErr;
       return res.json({ message: 'Estadística actualizada' });
     }
 
@@ -515,7 +523,8 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
 
   try {
     if (isSupabaseConfigured()) {
-      await supabase.from('estadisticas_semanales').delete().eq('id', id);
+      const { error: delErr } = await supabase.from('estadisticas_semanales').delete().eq('id', id);
+      if (delErr) throw delErr;
       return res.json({ message: 'Estadística eliminada' });
     }
 

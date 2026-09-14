@@ -240,6 +240,7 @@ export default function AdminDashboard() {
                 <p className="empty-msg">No hay estadísticas aprobadas aún</p>
               </div>
             ) : (
+              <div className="table-wrapper">
               <table className="data-table">
                 <thead>
                   <tr>
@@ -298,6 +299,7 @@ export default function AdminDashboard() {
                 <p className="empty-msg">Sin estadísticas para este filtro</p>
               </div>
             ) : (
+              <div className="table-wrapper">
               <table className="data-table">
                 <thead>
                   <tr>
@@ -361,6 +363,7 @@ export default function AdminDashboard() {
                 <p className="empty-msg">Todo al día — sin pendientes</p>
               </div>
             ) : (
+              <div className="table-wrapper">
               <table className="data-table">
                 <thead>
                   <tr>

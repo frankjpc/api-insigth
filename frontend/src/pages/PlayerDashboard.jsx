@@ -271,6 +271,7 @@ export default function PlayerDashboard() {
               <p className="empty-msg">Aún no hay estadísticas aprobadas en el torneo</p>
             </div>
           ) : (
+            <div className="table-wrapper">
             <table className="data-table">
               <thead>
                 <tr>
@@ -368,6 +369,7 @@ export default function PlayerDashboard() {
 
           {/* Tabla detalle mis jornadas */}
           {stats.semanas.length > 0 && (
+            <div className="table-wrapper">
             <table className="data-table" style={{ marginTop: 12 }}>
               <thead>
                 <tr>

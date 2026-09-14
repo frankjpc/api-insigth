@@ -1677,32 +1677,29 @@ body,
 }
 
 /* ===========================
-   RESPONSIVE
+   RESPONSIVE — Completo
 =========================== */
 
-/* ── 1200px: reducir padding del dashboard ── */
+/* ── 1200px: dashboard padding ── */
 @media (max-width: 1200px) {
   .dashboard {
     padding: 24px 20px;
   }
-
   .navbar {
     padding: 0 20px;
   }
 }
 
-/* ── 900px: login columna única, ocultar imagen ── */
+/* ── 900px: login, pow-grid ── */
 @media (max-width: 900px) {
   .login-bg {
     height: 100vh;
     grid-template-columns: 1fr;
     overflow-y: auto;
   }
-
   .login-brand {
     display: none;
   }
-
   .login-form-panel {
     padding: 40px 28px;
     min-height: 100vh;
@@ -1711,93 +1708,120 @@ body,
       radial-gradient(ellipse 60% 40% at 50% 0%, rgba(6, 182, 212, 0.06) 0%, transparent 60%),
       var(--bg-root);
   }
-
   .login-container {
     max-width: 400px;
     width: 100%;
   }
-
-  /* player of week grid → columna única */
   .pow-grid {
     grid-template-columns: 1fr;
   }
+  /* stat cards 2 col en tablet */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-/* ── 768px: layout general ── */
+/* ── 768px: layout general móvil ── */
 @media (max-width: 768px) {
   .dashboard {
-    padding: 16px 12px;
+    padding: 14px 12px;
   }
 
+  /* ── Navbar ── */
   .navbar {
     padding: 0 14px;
     height: 54px;
   }
-
   .navbar-brand-icon {
     display: none;
   }
-
-  /* stat cards 1 columna */
-  .stats-grid {
-    grid-template-columns: 1fr;
+  .navbar-brand {
+    font-size: 0.85rem;
+  }
+  .logout-btn span {
+    display: none; /* ocultar texto, solo ícono */
+  }
+  .logout-btn {
+    padding: 7px 10px;
   }
 
-  /* week cards 3 columnas en móvil */
+  /* ── Stat cards — 1 col ── */
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* ── Week cards — 3 col ── */
   .weeks-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  /* tabs con scroll horizontal */
+  /* ── Tabs — scroll horizontal ── */
   .seg-tabs {
     width: 100%;
     overflow-x: auto;
     padding-bottom: 4px;
+    scrollbar-width: none;
   }
-
+  .seg-tabs::-webkit-scrollbar {
+    display: none;
+  }
   .seg-tab {
     white-space: nowrap;
     flex-shrink: 0;
-  }
-
-  /* tabla más compacta */
-  .data-table {
+    padding: 7px 12px;
     font-size: 0.78rem;
   }
 
+  /* ── Tabla — scroll horizontal + fuente reducida ── */
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--r-md);
+  }
+  .data-table {
+    font-size: 0.78rem;
+    min-width: 520px; /* fuerza scroll en vez de aplastar columnas */
+  }
   .data-table th,
   .data-table td {
     padding: 10px 10px;
+    white-space: nowrap;
   }
 
-  /* modal ocupa todo el ancho */
+  /* ── Modal ── */
   .modal {
     padding: 22px 18px;
     max-width: 100%;
     border-radius: var(--r-lg);
   }
-
   .num-input-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr 1fr; /* mantener 3 col en tablet */
+    gap: 8px;
   }
 
-  /* notif panel ancho completo */
+  /* ── Notification panel ── */
   .notif-panel {
     right: 8px;
     left: 8px;
     width: auto;
   }
 
-  /* page header más compacto */
+  /* ── Page header ── */
   .page-header {
     margin-bottom: 20px;
   }
-
   .page-title {
     font-size: 1.25rem;
   }
 
-  /* FC cards en fila scrollable */
+  /* ── POW card row ── */
+  .pow-card-row {
+    flex-wrap: wrap;
+  }
+
+  /* ── FC card wrapper ── */
   .fc-card-wrapper {
     padding: 8px 0;
   }
@@ -1805,29 +1829,48 @@ body,
 
 /* ── 600px: ajustes finos ── */
 @media (max-width: 600px) {
-
   /* week cards 2 columnas */
   .weeks-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  /* stat cards mostrar inline */
+  /* stat cards: 1 col con números más pequeños */
   .stats-grid {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 8px;
   }
-
   .stat-card {
     padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .stat-card-header {
+    margin-bottom: 0;
+  }
+  .stat-card-val {
+    font-size: 2rem;
+  }
+  .stat-card-accent {
+    /* mover accent al lado izquierdo para layout horizontal */
+    bottom: 0;
+    top: 0;
+    right: auto;
+    width: 3px;
+    height: auto;
   }
 
-  /* tabla: ocultar columna jornadas */
-  .data-table th:last-child,
-  .data-table td:last-child {
-    display: none;
+  /* inputs de números en 1 fila */
+  .num-input-row {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+  .num-input {
+    font-size: 1.2rem;
+    padding: 8px;
   }
 
-  /* página de login con padding reducido */
+  /* login */
   .login-form-panel {
     padding: 32px 20px;
   }
@@ -1838,18 +1881,22 @@ body,
     right: 12px;
     left: 12px;
   }
-
   .toast {
     max-width: 100%;
   }
 
   /* glass card menos padding */
   .glass-card {
-    padding: 16px 14px;
+    padding: 14px 12px;
   }
 
-  /* navbar usuario: solo nombre */
+  /* navbar: ocultar el badge de rol */
   .navbar-role {
+    display: none;
+  }
+
+  /* tabla: ocultar última col de acciones en lista de semanas  */
+  .data-table .col-hide-sm {
     display: none;
   }
 }
@@ -1860,6 +1907,7 @@ body,
     grid-template-columns: repeat(2, 1fr);
   }
 
+  /* navbar: ocultar texto del brand */
   .navbar-brand span {
     display: none;
   }
@@ -1867,41 +1915,48 @@ body,
   .page-title {
     font-size: 1.1rem;
   }
-
   .page-meta {
     flex-wrap: wrap;
     font-size: 0.72rem;
   }
 
-  /* modal full screen en móvil muy pequeño */
+  /* modal — bottom sheet en móvil pequeño */
   .modal-overlay {
     padding: 0;
     align-items: flex-end;
   }
-
   .modal {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
     max-width: 100%;
     width: 100%;
+    padding: 20px 16px;
+  }
+  .modal-footer {
+    flex-direction: column;
+  }
+  .modal-footer .btn {
+    width: 100%;
+    justify-content: center;
   }
 
-  /* FC card más pequeña */
+  /* FC card más compacta */
   .fc-card {
     width: 150px;
     padding: 14px 12px 12px;
   }
-
   .fc-rating {
     font-size: 1.8rem;
   }
-
   .fc-img-frame {
     width: 90px;
     height: 90px;
   }
+  .fc-lastname {
+    font-size: 0.95rem;
+  }
 
-  /* notif panel ocupa todo */
+  /* notif panel full width */
   .notif-panel {
     right: 0;
     left: 0;
@@ -1909,9 +1964,44 @@ body,
     border-radius: 0;
     width: 100%;
   }
+
+  /* Tabs texto corto */
+  .seg-tab {
+    padding: 6px 10px;
+    font-size: 0.73rem;
+  }
+
+  /* stat card horizontal compacto */
+  .stat-card-val {
+    font-size: 1.8rem;
+  }
+
+  /* pow form */
+  .pow-form input,
+  .pow-form select {
+    font-size: 0.875rem;
+  }
 }
 
-/* login btn extras */
+/* ── 360px: móvil muy pequeño ── */
+@media (max-width: 360px) {
+  .dashboard {
+    padding: 10px 8px;
+  }
+  .glass-card {
+    padding: 12px 10px;
+  }
+  .stat-card-val {
+    font-size: 1.6rem;
+  }
+  .data-table {
+    font-size: 0.72rem;
+  }
+}
+
+/* ─────────────────────────────
+   LOGIN BUTTON (global fixes)
+───────────────────────────── */
 .login-btn {
   background: var(--accent);
   border: none;

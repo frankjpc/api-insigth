@@ -71,6 +71,7 @@ function migrateColumns() {
     { table: 'jugador_semana', column: 'imagen_carta', def: 'TEXT' },
     { table: 'jugador_semana', column: 'tipo',         def: "TEXT DEFAULT 'goleador'" },
     { table: 'jugador_semana', column: 'updated_at',   def: 'DATETIME DEFAULT CURRENT_TIMESTAMP' },
+    { table: 'estadisticas_semanales', column: 'updated_at', def: 'DATETIME DEFAULT CURRENT_TIMESTAMP' },
     { table: 'usuarios',       column: 'pin',          def: 'TEXT' },
   ];
   for (const { table, column, def } of migrations) {

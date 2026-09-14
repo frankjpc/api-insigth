@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// Aseguramos que la URL siempre termine en /api incluso si el usuario olvidó ponerlo en Vercel o en su entorno
+const API_URL = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
 
 const client = axios.create({
   baseURL: API_URL,

@@ -117,12 +117,21 @@ export default function AdminDashboard() {
     }
     setSubmitting(true);
     try {
-      const formData = new FormData();
-      formData.append('semana',       powForm.semana);
-      formData.append('tipo',         powForm.tipo);
-      formData.append('imagen_carta', powForm.fileCarta);
-      await client.post('/player-of-week', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      // Convertir la imagen a base64 para guardarla directamente en la BD
+      // Esto elimina la dependencia de Supabase Storage y cualquier problema de permisos/URLs
+      const toBase64 = (file) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result); // resultado: data:image/...;base64,...
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const base64Image = await toBase64(powForm.fileCarta);
+
+      await client.post('/player-of-week', {
+        semana:       powForm.semana,
+        tipo:         powForm.tipo,
+        imagen_carta: base64Image,
       });
       addToast('Carta publicada correctamente', 'success');
       setPowForm({ semana: '', tipo: 'goleador', fileCarta: null, previewCarta: null });
@@ -536,7 +545,7 @@ export default function AdminDashboard() {
                           </span>
                           {p.imagen_carta ? (
                             <img
-                              src={`http://localhost:3001${p.imagen_carta}`}
+                              src={p.imagen_carta}
                               alt="Carta FC"
                               style={{
                                 width: 150,

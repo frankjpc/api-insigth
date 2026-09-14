@@ -157,7 +157,7 @@ export default function PlayerDashboard() {
               {myPow.imagen_carta ? (
                 <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
                   <img
-                    src={`http://localhost:3001${myPow.imagen_carta}`}
+                    src={myPow.imagen_carta}
                     alt="Carta FC"
                     style={{
                       maxHeight: 280,
@@ -238,7 +238,7 @@ export default function PlayerDashboard() {
                 </div>
                 {currentPow.imagen_carta ? (
                   <img
-                    src={`http://localhost:3001${currentPow.imagen_carta}`}
+                    src={currentPow.imagen_carta}
                     alt="Carta FC"
                     style={{
                       width: '100%',

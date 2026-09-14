@@ -1,6 +1,4 @@
 const express = require('express');
-const multer = require('multer');
-const path = require('path');
 const { supabase } = require('../db/supabase');
 const { getDb } = require('../db/database');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
@@ -8,24 +6,21 @@ const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const router = express.Router();
 const isSupabaseConfigured = () => Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_KEY);
 
-// Memory storage for Supabase upload, Disk storage for local fallback
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 15 * 1024 * 1024 }, // 15 MB
-  fileFilter: (req, file, cb) => {
-    if (/jpeg|jpg|png|webp/.test(path.extname(file.originalname).toLowerCase())) {
-      cb(null, true);
-    } else {
-      cb(new Error('Solo se permiten imágenes (jpg, png, webp)'));
-    }
-  },
-});
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+// La imagen llega como base64 desde el frontend (data:image/...;base64,...)
+// o como texto vacío/null. No usamos Supabase Storage — la guardamos en la BD.
+function extractBase64(rawImg) {
+  if (!rawImg) return null;
+  // Si ya viene con prefijo data:..., lo devolvemos tal cual
+  if (rawImg.startsWith('data:')) return rawImg;
+  return rawImg;
+}
 
 // GET /api/player-of-week — Todos los jugadores de la semana
 router.get('/', async (req, res) => {
   try {
     if (isSupabaseConfigured()) {
-      // Fetch sin join automático para evitar error PGRST200 cuando la FK no está en el schema cache
       const { data, error } = await supabase
         .from('jugador_semana')
         .select('*')
@@ -37,7 +32,11 @@ router.get('/', async (req, res) => {
       const records = await Promise.all((data || []).map(async (js) => {
         let nombre = '', apellido = '', posicion = '';
         if (js.usuario_id) {
-          const { data: u } = await supabase.from('usuarios').select('nombre, apellido, posicion').eq('id', js.usuario_id).maybeSingle();
+          const { data: u } = await supabase
+            .from('usuarios')
+            .select('nombre, apellido, posicion')
+            .eq('id', js.usuario_id)
+            .maybeSingle();
           if (u) { nombre = u.nombre; apellido = u.apellido; posicion = u.posicion; }
         }
         return { ...js, nombre, apellido, posicion, total_goles: 0, total_asistencias: 0, total_atajadas: 0 };
@@ -69,7 +68,6 @@ router.get('/:semana', async (req, res) => {
   const semana = parseInt(req.params.semana);
   try {
     if (isSupabaseConfigured()) {
-      // Fetch sin join automático para evitar error PGRST200
       const { data, error } = await supabase
         .from('jugador_semana')
         .select('*')
@@ -81,7 +79,11 @@ router.get('/:semana', async (req, res) => {
 
       let nombre = '', apellido = '', posicion = '';
       if (data.usuario_id) {
-        const { data: u } = await supabase.from('usuarios').select('nombre, apellido, posicion').eq('id', data.usuario_id).maybeSingle();
+        const { data: u } = await supabase
+          .from('usuarios')
+          .select('nombre, apellido, posicion')
+          .eq('id', data.usuario_id)
+          .maybeSingle();
         if (u) { nombre = u.nombre; apellido = u.apellido; posicion = u.posicion; }
       }
 
@@ -114,44 +116,24 @@ router.get('/:semana', async (req, res) => {
   }
 });
 
-// POST /api/player-of-week — Admin publica carta
-router.post('/', authenticateToken, requireAdmin, upload.single('imagen_carta'), async (req, res) => {
-  const { semana, tipo } = req.body;
+// POST /api/player-of-week — Admin publica carta (imagen como base64 en JSON)
+router.post('/', authenticateToken, requireAdmin, async (req, res) => {
+  const { semana, tipo, imagen_carta } = req.body;
+
   if (!semana) {
     return res.status(400).json({ error: 'La semana es requerida' });
   }
-  if (!req.file) {
+  if (!imagen_carta) {
     return res.status(400).json({ error: 'La imagen de la carta es requerida' });
   }
 
   const numSemana = parseInt(semana);
   const tipoFinal = tipo || 'goleador';
+  const imagenBase64 = extractBase64(imagen_carta);
 
   try {
-    let imagenCartaUrl = '';
-
     if (isSupabaseConfigured()) {
-      const ext = path.extname(req.file.originalname) || '.png';
-      const fileName = `carta_sem${numSemana}_${Date.now()}${ext}`;
-
-      // Upload file buffer to Supabase Storage bucket 'cartas'
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('cartas')
-        .upload(fileName, req.file.buffer, {
-          contentType: req.file.mimetype,
-          upsert: true,
-        });
-
-      if (uploadError) {
-        console.error('Error subiendo imagen a Supabase Storage:', uploadError);
-        throw new Error('No se pudo subir la imagen a Supabase Storage: ' + uploadError.message);
-      }
-
-      // Get public URL
-      const { data: publicUrlData } = supabase.storage.from('cartas').getPublicUrl(fileName);
-      imagenCartaUrl = publicUrlData.publicUrl;
-
-      // Upsert into Supabase DB
+      // Verificar si ya existe una carta para esta semana
       const { data: existing } = await supabase
         .from('jugador_semana')
         .select('id')
@@ -162,7 +144,7 @@ router.post('/', authenticateToken, requireAdmin, upload.single('imagen_carta'),
         await supabase
           .from('jugador_semana')
           .update({
-            imagen_carta: imagenCartaUrl,
+            imagen_carta: imagenBase64,
             tipo: tipoFinal,
             updated_at: new Date().toISOString(),
           })
@@ -171,24 +153,11 @@ router.post('/', authenticateToken, requireAdmin, upload.single('imagen_carta'),
         await supabase.from('jugador_semana').insert([{
           semana: numSemana,
           usuario_id: null,
-          imagen_carta: imagenCartaUrl,
+          imagen_carta: imagenBase64,
           tipo: tipoFinal,
         }]);
       }
     } else {
-      // Local fallback: guardar en /uploads
-      const fs = require('fs');
-      const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-      }
-      const ext = path.extname(req.file.originalname) || '.png';
-      const fileName = `carta_sem${numSemana}_${Date.now()}${ext}`;
-      const filePath = path.join(uploadsDir, fileName);
-      fs.writeFileSync(filePath, req.file.buffer);
-
-      imagenCartaUrl = `/uploads/${fileName}`;
-
       const db = getDb();
       db.pragma('foreign_keys = OFF');
       try {
@@ -198,19 +167,19 @@ router.post('/', authenticateToken, requireAdmin, upload.single('imagen_carta'),
             UPDATE jugador_semana
             SET imagen_carta = ?, tipo = ?, updated_at = CURRENT_TIMESTAMP
             WHERE semana = ?
-          `).run(imagenCartaUrl, tipoFinal, numSemana);
+          `).run(imagenBase64, tipoFinal, numSemana);
         } else {
           db.prepare(`
             INSERT INTO jugador_semana (semana, usuario_id, imagen_carta, tipo)
             VALUES (?, NULL, ?, ?)
-          `).run(numSemana, imagenCartaUrl, tipoFinal);
+          `).run(numSemana, imagenBase64, tipoFinal);
         }
       } finally {
         db.pragma('foreign_keys = ON');
       }
     }
 
-    res.json({ message: `Carta de la Semana ${numSemana} publicada correctamente`, imagen_carta: imagenCartaUrl });
+    res.json({ message: `Carta de la Semana ${numSemana} publicada correctamente` });
   } catch (err) {
     console.error('Error publicando carta:', err);
     res.status(500).json({ error: err.message || 'Error al publicar carta' });

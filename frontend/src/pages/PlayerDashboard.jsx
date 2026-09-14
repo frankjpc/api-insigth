@@ -179,8 +179,8 @@ export default function PlayerDashboard() {
           );
         })()}
 
-        {/* ── Layout 2 col: mis stats + jugador de la semana ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: currentPow ? '1fr 280px' : '1fr', gap: 20, marginBottom: 24, alignItems: 'start' }}>
+        {/* ── Layout 1 col: mis stats ── */}
+        <div style={{ marginBottom: 24 }}>
 
           {/* Mis stats totales */}
           <div>
@@ -214,50 +214,6 @@ export default function PlayerDashboard() {
               </div>
             </div>
           </div>
-
-          {/* Jugador de la semana actual (panel lateral) */}
-          {currentPow && !myPow && (() => {
-            const TIPO_LABEL = {
-              goleador:  '⚽ Goleador',
-              asistidor: '🎯 Asistidor',
-              portero:   '🧤 Portero',
-            };
-            const TIPO_COLOR = {
-              goleador:  'var(--data-goal)',
-              asistidor: 'var(--data-assist)',
-              portero:   'var(--data-save)',
-            };
-            const color = TIPO_COLOR[currentPow.tipo] || 'var(--data-goal)';
-            return (
-              <div className="glass-card" style={{
-                padding: '18px 16px',
-                borderColor: `color-mix(in srgb, ${color} 12%, transparent)`,
-              }}>
-                <div className="section-title" style={{ color, marginBottom: 12 }}>
-                  <Trophy size={13} /> Sem {currentPow.semana} · {TIPO_LABEL[currentPow.tipo] || 'JDSEM'}
-                </div>
-                {currentPow.imagen_carta ? (
-                  <img
-                    src={currentPow.imagen_carta}
-                    alt="Carta FC"
-                    style={{
-                      width: '100%',
-                      borderRadius: 'var(--r-md)',
-                      border: `1px solid color-mix(in srgb, ${color} 25%, transparent)`,
-                      boxShadow: `0 0 20px color-mix(in srgb, ${color} 15%, transparent)`,
-                    }}
-                  />
-                ) : (
-                  <FCCard player={currentPow} />
-                )}
-                {currentPow.destacado && (
-                  <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.75rem', fontStyle: 'italic', marginTop: 8 }}>
-                    "{currentPow.destacado}"
-                  </p>
-                )}
-              </div>
-            );
-          })()}
         </div>
 
         {/* ── Tabla general (leaderboard) ── */}
@@ -433,10 +389,10 @@ export default function PlayerDashboard() {
                       src={p.imagen_carta}
                       alt="Carta FC"
                       style={{
-                        width: 150,
+                        width: 220,
                         borderRadius: 'var(--r-md)',
                         border: `1px solid ${color}33`,
-                        boxShadow: `0 0 18px ${color}25`,
+                        boxShadow: `0 0 24px ${color}25`,
                       }}
                     />
                   </div>

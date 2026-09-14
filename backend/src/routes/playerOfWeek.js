@@ -25,21 +25,22 @@ const upload = multer({
 router.get('/', async (req, res) => {
   try {
     if (isSupabaseConfigured()) {
+      // Fetch sin join automático para evitar error PGRST200 cuando la FK no está en el schema cache
       const { data, error } = await supabase
         .from('jugador_semana')
-        .select('*, usuarios(nombre, apellido, posicion)')
+        .select('*')
         .order('semana', { ascending: true });
 
       if (error) throw error;
 
-      const records = (data || []).map((js) => ({
-        ...js,
-        nombre: js.usuarios?.nombre || '',
-        apellido: js.usuarios?.apellido || '',
-        posicion: js.usuarios?.posicion || '',
-        total_goles: 0,
-        total_asistencias: 0,
-        total_atajadas: 0,
+      // Para cada carta, buscar el usuario por separado si tiene usuario_id
+      const records = await Promise.all((data || []).map(async (js) => {
+        let nombre = '', apellido = '', posicion = '';
+        if (js.usuario_id) {
+          const { data: u } = await supabase.from('usuarios').select('nombre, apellido, posicion').eq('id', js.usuario_id).maybeSingle();
+          if (u) { nombre = u.nombre; apellido = u.apellido; posicion = u.posicion; }
+        }
+        return { ...js, nombre, apellido, posicion, total_goles: 0, total_asistencias: 0, total_atajadas: 0 };
       }));
 
       return res.json(records);
@@ -68,20 +69,27 @@ router.get('/:semana', async (req, res) => {
   const semana = parseInt(req.params.semana);
   try {
     if (isSupabaseConfigured()) {
+      // Fetch sin join automático para evitar error PGRST200
       const { data, error } = await supabase
         .from('jugador_semana')
-        .select('*, usuarios(nombre, apellido, posicion)')
+        .select('*')
         .eq('semana', semana)
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') throw error;
       if (!data) return res.json(null);
 
+      let nombre = '', apellido = '', posicion = '';
+      if (data.usuario_id) {
+        const { data: u } = await supabase.from('usuarios').select('nombre, apellido, posicion').eq('id', data.usuario_id).maybeSingle();
+        if (u) { nombre = u.nombre; apellido = u.apellido; posicion = u.posicion; }
+      }
+
       return res.json({
         ...data,
-        nombre: data.usuarios?.nombre || '',
-        apellido: data.usuarios?.apellido || '',
-        posicion: data.usuarios?.posicion || '',
+        nombre,
+        apellido,
+        posicion,
         total_goles: 0,
         total_asistencias: 0,
         total_atajadas: 0,

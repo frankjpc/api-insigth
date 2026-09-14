@@ -1,8 +1,10 @@
 import axios from 'axios';
 
+// Axios requiere que baseURL termine con "/" para que preserve el path base (/api/)
+// al concatenar sub-rutas como "/auth/login". Sin la barra final, /api se descarta.
 const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-// Aseguramos que la URL siempre termine en /api incluso si el usuario olvidó ponerlo en Vercel o en su entorno
-const API_URL = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
+const normalizedUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
+const API_URL = normalizedUrl.endsWith('/') ? normalizedUrl : `${normalizedUrl}/`;
 
 const client = axios.create({
   baseURL: API_URL,

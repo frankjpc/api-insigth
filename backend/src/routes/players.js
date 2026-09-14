@@ -65,7 +65,7 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
 // PUT /api/players/:id/role — Cambiar rol de un usuario (admin only)
 router.put('/:id/role', authenticateToken, requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const { rol } = req.body;
+  const { rol } = req.body || {};
 
   if (!['admin', 'jugador'].includes(rol)) {
     return res.status(400).json({ error: 'Rol inválido' });

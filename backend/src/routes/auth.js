@@ -10,7 +10,7 @@ const isSupabaseConfigured = () => Boolean(process.env.SUPABASE_URL && process.e
 
 // POST /api/auth/login — Login o auto-registro
 router.post('/login', async (req, res) => {
-  const { nombre, apellido, posicion, pin } = req.body;
+  const { nombre, apellido, posicion, pin } = req.body || {};
 
   if (!nombre || !apellido || !posicion) {
     return res.status(400).json({ error: 'Nombre, apellido y posición son requeridos' });

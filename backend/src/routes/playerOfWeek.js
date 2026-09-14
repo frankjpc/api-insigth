@@ -118,7 +118,7 @@ router.get('/:semana', async (req, res) => {
 
 // POST /api/player-of-week — Admin publica carta (imagen como base64 en JSON)
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
-  const { semana, tipo, imagen_carta } = req.body;
+  const { semana, tipo, imagen_carta } = req.body || {};
 
   if (!semana) {
     return res.status(400).json({ error: 'La semana es requerida' });
@@ -141,7 +141,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
         .maybeSingle();
 
       if (existing) {
-        await supabase
+        const { error: updErr } = await supabase
           .from('jugador_semana')
           .update({
             imagen_carta: imagenBase64,
@@ -149,13 +149,15 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
             updated_at: new Date().toISOString(),
           })
           .eq('semana', numSemana);
+        if (updErr) throw updErr;
       } else {
-        await supabase.from('jugador_semana').insert([{
+        const { error: insErr } = await supabase.from('jugador_semana').insert([{
           semana: numSemana,
           usuario_id: null,
           imagen_carta: imagenBase64,
           tipo: tipoFinal,
         }]);
+        if (insErr) throw insErr;
       }
     } else {
       const db = getDb();

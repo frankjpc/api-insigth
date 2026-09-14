@@ -124,7 +124,7 @@ router.get('/me', authenticateToken, async (req, res) => {
 
 // POST /api/stats — Jugador envía sus estadísticas de una semana
 router.post('/', authenticateToken, async (req, res) => {
-  const { semana, goles, asistencias, atajadas } = req.body;
+  const { semana, goles, asistencias, atajadas } = req.body || {};
   const userId = req.user.id;
 
   if (!semana || semana < 1 || semana > 6) {
@@ -358,7 +358,7 @@ router.get('/all', authenticateToken, requireAdmin, async (req, res) => {
 // PUT /api/stats/:id/approve — Admin aprueba (y opcionalmente edita)
 router.put('/:id/approve', authenticateToken, requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const { goles, asistencias, atajadas } = req.body;
+  const { goles, asistencias, atajadas } = req.body || {};
 
   try {
     if (isSupabaseConfigured()) {
@@ -423,7 +423,7 @@ router.put('/:id/approve', authenticateToken, requireAdmin, async (req, res) => 
 // PUT /api/stats/:id/reject — Admin rechaza con nota
 router.put('/:id/reject', authenticateToken, requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const { nota } = req.body;
+  const { nota } = req.body || {};
 
   try {
     if (isSupabaseConfigured()) {
@@ -475,7 +475,7 @@ router.put('/:id/reject', authenticateToken, requireAdmin, async (req, res) => {
 // PUT /api/stats/:id — Admin edita estadísticas directamente
 router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const { goles, asistencias, atajadas, estado } = req.body;
+  const { goles, asistencias, atajadas, estado } = req.body || {};
 
   try {
     if (isSupabaseConfigured()) {

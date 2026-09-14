@@ -133,11 +133,12 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
 
   try {
     if (isSupabaseConfigured()) {
-      // Verificar si ya existe una carta para esta semana
+      // Verificar si ya existe una carta para esta semana Y de este tipo
       const { data: existing } = await supabase
         .from('jugador_semana')
         .select('id')
         .eq('semana', numSemana)
+        .eq('tipo', tipoFinal)
         .maybeSingle();
 
       if (existing) {
@@ -145,10 +146,10 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
           .from('jugador_semana')
           .update({
             imagen_carta: imagenBase64,
-            tipo: tipoFinal,
             updated_at: new Date().toISOString(),
           })
-          .eq('semana', numSemana);
+          .eq('semana', numSemana)
+          .eq('tipo', tipoFinal);
         if (updErr) throw updErr;
       } else {
         const { error: insErr } = await supabase.from('jugador_semana').insert([{
@@ -163,13 +164,13 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       const db = getDb();
       db.pragma('foreign_keys = OFF');
       try {
-        const existing = db.prepare('SELECT id FROM jugador_semana WHERE semana = ?').get(numSemana);
+        const existing = db.prepare('SELECT id FROM jugador_semana WHERE semana = ? AND tipo = ?').get(numSemana, tipoFinal);
         if (existing) {
           db.prepare(`
             UPDATE jugador_semana
-            SET imagen_carta = ?, tipo = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE semana = ?
-          `).run(imagenBase64, tipoFinal, numSemana);
+            SET imagen_carta = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE semana = ? AND tipo = ?
+          `).run(imagenBase64, numSemana, tipoFinal);
         } else {
           db.prepare(`
             INSERT INTO jugador_semana (semana, usuario_id, imagen_carta, tipo)

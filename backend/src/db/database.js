@@ -44,14 +44,15 @@ function initializeTables() {
 
     CREATE TABLE IF NOT EXISTS jugador_semana (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      semana INTEGER NOT NULL UNIQUE,
+      semana INTEGER NOT NULL,
       usuario_id INTEGER DEFAULT 0,
       imagen_url TEXT,
       imagen_carta TEXT,
       tipo TEXT DEFAULT 'goleador',
       destacado TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(semana, tipo)
     );
 
     CREATE TABLE IF NOT EXISTS notificaciones (

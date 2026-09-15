@@ -83,7 +83,7 @@ router.post('/login', async (req, res) => {
         const admins = db.prepare("SELECT id FROM usuarios WHERE rol = 'admin'").all();
         for (const admin of admins) {
           db.prepare(
-            'INSERT INTO notificaciones (usuario_id, tipo, mensaje)'
+            'INSERT INTO notificaciones (usuario_id, tipo, mensaje) VALUES (?, ?, ?)'
           ).run(admin.id, 'nuevo_jugador', `Nuevo jugador registrado: ${usuario.nombre} ${usuario.apellido} (${usuario.posicion})`);
         }
       } else {

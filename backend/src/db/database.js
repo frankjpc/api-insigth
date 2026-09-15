@@ -100,14 +100,15 @@ function migrateJugadorSemana() {
       -- Crear tabla nueva sin restricciones en usuario_id
       CREATE TABLE jugador_semana_new (
         id          INTEGER PRIMARY KEY AUTOINCREMENT,
-        semana      INTEGER NOT NULL UNIQUE,
+        semana      INTEGER NOT NULL,
         usuario_id  INTEGER DEFAULT NULL,
         imagen_url  TEXT,
         imagen_carta TEXT,
         tipo        TEXT DEFAULT 'goleador',
         destacado   TEXT,
         created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+        updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(semana, tipo)
       );
 
       -- Copiar datos existentes

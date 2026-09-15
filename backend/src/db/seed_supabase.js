@@ -17,10 +17,6 @@ async function seed() {
   // Usuarios iniciales
   const usuarios = [
     { nombre: 'Admin', apellido: 'Sistema', posicion: 'Ala', rol: 'admin', pin: '1234' },
-    { nombre: 'Carlos', apellido: 'Rodríguez', posicion: 'Pívot', rol: 'jugador' },
-    { nombre: 'Mateo', apellido: 'Fernández', posicion: 'Cierre', rol: 'jugador' },
-    { nombre: 'Lucas', apellido: 'Gómez', posicion: 'Portero', rol: 'jugador' },
-    { nombre: 'Santiago', apellido: 'López', posicion: 'Ala', rol: 'jugador' },
   ];
 
   for (const user of usuarios) {

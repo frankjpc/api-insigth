@@ -5,7 +5,7 @@ import {
   ArrowRight, Zap
 } from 'lucide-react';
 
-const POSITIONS = ['Portero', 'Cierre', 'Ala', 'Pivot', 'Universal'];
+const POSITIONS = ['Portero', 'Defensa', 'Centrocampista', 'Delantero', 'Universal'];
 
 // Datos decorativos del panel izquierdo
 const BRAND_STATS = [
@@ -62,9 +62,6 @@ export default function Login() {
 
           {/* Header */}
           <div className="login-header">
-            <div className="login-header-label">
-              <Zap size={11} /> Acceso al sistema
-            </div>
             <h1 className="login-title">Bienvenido</h1>
             <p className="login-subtitle">
               Ingresa tu nombre y posición para continuar

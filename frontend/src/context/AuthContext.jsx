@@ -1,18 +1,43 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import client from '../api/client';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    try {
-      const stored = localStorage.getItem('user');
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  // validating: true mientras comprobamos si el token guardado sigue vigente
+  const [validating, setValidating] = useState(true);
+
+  // Al montar, validar el token guardado en localStorage
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    const storedUser  = localStorage.getItem('user');
+
+    if (!storedToken || !storedUser) {
+      // No hay sesión guardada → mostrar login de inmediato
+      setValidating(false);
+      return;
+    }
+
+    // Hay token → mostrar datos locales de inmediato (evita pantalla en blanco)
+    // y luego validar en background contra el servidor
+    try {
+      setUser(JSON.parse(storedUser));
+    } catch {
+      localStorage.removeItem('user');
+    }
+
+    // Ping al servidor para validar token (también sirve de warm-up)
+    client.get('/health')
+      .catch(() => {
+        // Si el servidor no responde, mantener la sesión local
+        // El usuario podrá operar cuando el server se despierte
+      })
+      .finally(() => {
+        setValidating(false);
+      });
+  }, []);
 
   const login = async (nombre, apellido, posicion, pin) => {
     setLoading(true);
@@ -22,9 +47,6 @@ export function AuthProvider({ children }) {
 
       const { data } = await client.post('/auth/login', body);
 
-      // El backend devuelve 200 + requiresPin:true cuando
-      // la cuenta tiene PIN pero no fue provisto o era incorrecto.
-      // En ese caso NO hay token — no es un login exitoso.
       if (data.requiresPin) {
         return {
           success: false,
@@ -56,7 +78,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, validating, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

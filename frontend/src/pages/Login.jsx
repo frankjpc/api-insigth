@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useServerWarmup } from '../hooks/useServerWarmup';
 import {
   Activity, User, ChevronDown, Lock,
-  ArrowRight, Zap
+  ArrowRight, Zap, Wifi
 } from 'lucide-react';
 
 const POSITIONS = ['Portero', 'Defensa', 'Centrocampista', 'Delantero', 'Universal'];
@@ -16,6 +17,7 @@ const BRAND_STATS = [
 
 export default function Login() {
   const { login, loading } = useAuth();
+  const { slow } = useServerWarmup();
 
   const [form, setForm] = useState({ nombre: '', apellido: '', posicion: '' });
   const [pin, setPin] = useState('');
@@ -59,6 +61,28 @@ export default function Login() {
       {/* ── PANEL DERECHO — Formulario ── */}
       <div className="login-form-panel">
         <div className="login-container">
+
+          {/* Warm-up banner: se muestra si el servidor tarda >3 seg en responder */}
+          {slow && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              background: 'rgba(204,255,0,0.07)',
+              border: '1px solid rgba(204,255,0,0.2)',
+              borderRadius: 'var(--r-sm)',
+              padding: '9px 13px',
+              marginBottom: 4,
+              fontSize: '0.78rem',
+              color: 'var(--volt)',
+              fontFamily: 'JetBrains Mono, monospace',
+            }}>
+              <span style={{ animation: 'spin 1.2s linear infinite', display: 'flex' }}>
+                <Wifi size={13} />
+              </span>
+              Despertando el servidor… esto puede tardar ~20 seg la primera vez.
+            </div>
+          )}
 
           {/* Header */}
           <div className="login-header">

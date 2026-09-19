@@ -15,29 +15,29 @@ export function AuthProvider({ children }) {
     const storedUser  = localStorage.getItem('user');
 
     if (!storedToken || !storedUser) {
-      // No hay sesión guardada → mostrar login de inmediato
       setValidating(false);
       return;
     }
 
-    // Hay token → mostrar datos locales de inmediato (evita pantalla en blanco)
-    // y luego validar en background contra el servidor
     try {
       setUser(JSON.parse(storedUser));
     } catch {
       localStorage.removeItem('user');
     }
 
-    // Ping al servidor para validar token (también sirve de warm-up)
     client.get('/health')
-      .catch(() => {
-        // Si el servidor no responde, mantener la sesión local
-        // El usuario podrá operar cuando el server se despierte
-      })
-      .finally(() => {
-        setValidating(false);
-      });
+      .catch(() => {})
+      .finally(() => { setValidating(false); });
   }, []);
+
+  // Keep-alive: ping cada 10 min para evitar que Render duerma el servidor
+  const KEEP_ALIVE_MS = 10 * 60 * 1000; // 10 minutos
+  useEffect(() => {
+    if (!user) return; // Solo cuando hay sesión activa
+    const ping = () => client.get('/health').catch(() => {});
+    const interval = setInterval(ping, KEEP_ALIVE_MS);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const login = async (nombre, apellido, posicion, pin) => {
     setLoading(true);

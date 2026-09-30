@@ -55,7 +55,7 @@ export default function Login() {
 
       {/* ── PANEL IZQUIERDO — Imagen ── */}
       <div className="login-brand">
-        <img src="/FC.jpg" alt="API Insight" className="login-brand-img" />
+        <img src="/EA.jpeg" alt="API Insight" className="login-brand-img" />
       </div>
 
       {/* ── PANEL DERECHO — Formulario ── */}
